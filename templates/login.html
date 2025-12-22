@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login</title>
+    <style>
+        :root{
+            --bg:#f3f7fb;
+            --card:#ffffff;
+            --primary:#1E6FB7;
+            --primary-dark:#15598f;
+            --muted:#6b7280;
+            --radius:12px;
+            --shadow:0 8px 24px rgba(23,43,77,0.08);
+        }
+        html,body{height:100%;margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#eef6fb);color:#122340;}
+        .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+        .card{width:100%;max-width:420px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px}
+        h1{margin:0 0 10px;font-size:22px;color:var(--primary-dark)}
+        p.lead{margin:0 0 16px;color:var(--muted);font-size:14px}
+        .field{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+        input[type="text"],input[type="password"]{padding:10px 12px;border-radius:10px;border:1px solid rgba(18,35,64,0.08);font-size:14px;outline:none}
+        input:focus{box-shadow:0 4px 12px rgba(30,111,183,0.08);border-color:var(--primary)}
+        .btn{display:inline-block;width:100%;padding:10px 12px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-weight:600;cursor:pointer}
+        .btn:hover{background:var(--primary-dark)}
+        .row{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+        .link{color:var(--primary);text-decoration:none;font-weight:600;font-size:13px}
+        .alt{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
+        .alert{background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px}
+        .show-pass{font-size:13px;color:var(--muted);cursor:pointer;border:none;background:none}
+        @media(max-width:480px){ .card{padding:20px} }
+    </style>
+</head>
+<body>
+<div class="center">
+    <div class="card" role="main" aria-labelledby="login-title">
+        <h1 id="login-title">Sign in to your account</h1>
+        <p class="lead">Manage tasks, track progress and get reminders.</p>
+
+        {% if error %}
+        <div class="alert" role="alert">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="field">
+                <label for="username" style="font-size:13px;color:var(--muted)">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username" required>
+            </div>
+
+            <div class="field">
+                <label for="password" style="font-size:13px;color:var(--muted)">Password</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input id="password" name="password" type="password" autocomplete="current-password" required style="flex:1">
+                    <button type="button" class="show-pass" id="togglePass" aria-label="Show password">Show</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <label style="font-size:13px;color:var(--muted)"><input type="checkbox" name="remember" style="margin-right:6px"> Remember</label>
+                <a class="link" href="{{ url_for('register') }}">Create account</a>
+            </div>
+
+            <div style="margin-top:14px">
+                <button class="btn" type="submit">Sign in</button>
+            </div>
+        </form>
+
+        <div class="alt">By signing in you agree to the app's terms.</div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const pw = document.getElementById('password');
+        const btn = document.getElementById('togglePass');
+        btn.addEventListener('click', function(){
+            if(pw.type === 'password'){ pw.type = 'text'; btn.textContent = 'Hide'; }
+            else { pw.type = 'password'; btn.textContent = 'Show'; }
+        });
+    })();
+</script>
+</body>
+</html>

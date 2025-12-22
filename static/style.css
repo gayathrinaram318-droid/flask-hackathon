@@ -1,0 +1,30 @@
+body { font-family: Arial; background: #f4f6f8; }
+.container { width: 500px; margin: auto; background: white; padding: 20px; }
+header { display: flex; justify-content: space-between; }
+.alert { background: #ffeaa7; padding: 10px; margin: 10px 0; }
+.progress-bg { background: #ddd; height: 10px; }
+.progress-fill { background: green; height: 10px; }
+.task-form input, button { margin: 5px; }
+.task-list li { margin: 8px 0; }
+.done { text-decoration: line-through; color: gray; }
+.logout { text-decoration: none; color: red; }
+.progress-box {
+    margin: 15px 0;
+}
+.progress-bar {
+    background: #ddd;
+    height: 18px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    background: #4CAF50;
+    width: 0%;
+}
+.stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+}

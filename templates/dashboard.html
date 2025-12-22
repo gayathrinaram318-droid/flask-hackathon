@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        :root{
+            --bg:#f3f7fb;
+            --card:#ffffff;
+            --primary:#1E6FB7; /* main blue */
+            --primary-dark:#15598f;
+            --muted:#6b7280;
+            --danger:#e74c3c;
+            --radius:10px;
+            --shadow:0 6px 18px rgba(23,43,77,0.08);
+        }
+        html,body{height:100%;margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#eef6fb);color:#122340;}
+        .container{max-width:980px;margin:28px auto;padding:20px;}
+        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+        h2{margin:0;font-weight:600;color:var(--primary-dark);}
+        .logout{color:var(--primary);text-decoration:none;font-weight:600;border:2px solid transparent;padding:8px 12px;border-radius:8px;}
+        .logout:hover{background:rgba(30,111,183,0.06);border-color:rgba(30,111,183,0.12);}
+
+        .card{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;border-left:4px solid rgba(30,111,183,0.06);}
+        .card.small{padding:12px;}
+        .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between;}
+
+        .progress-bar{width:100%;background:#e9f2fb;height:14px;border-radius:8px;overflow:hidden;border:1px solid rgba(30,111,183,0.06);}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-dark));width:0%;transition:width .4s ease;}
+
+        .task{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:8px;border:1px solid rgba(18,35,64,0.04);margin-bottom:10px;background:linear-gradient(180deg,rgba(255,255,255,0.6),transparent);}
+        .task-info{flex:1;margin-right:14px;}
+        .task-title{font-weight:600;color:#122340;}
+        .task-meta{color:var(--muted);font-size:13px;margin-top:6px;display:block;}
+        .done{text-decoration:line-through;color:#9aa4b2;}
+
+        .btn{appearance:none;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer}
+        .btn-primary{background:var(--primary);color:#fff}
+        .btn-primary:hover{background:var(--primary-dark)}
+        .btn-danger{background:var(--danger);color:#fff}
+        .small-form{display:inline-block;margin-left:8px}
+        input[type="text"], input[type="date"], input[type="number"]{padding:8px;border-radius:8px;border:1px solid rgba(18,35,64,0.08);min-width:180px}
+        form.add-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+        /* modal */
+        #reminderModal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(6,18,42,0.48);display:flex;align-items:center;justify-content:center;z-index:9999}
+        #reminderBox{background:var(--card);padding:20px;border-radius:12px;max-width:520px;width:92%;box-shadow:0 10px 30px rgba(11,31,64,0.18);border-left:6px solid var(--primary)}
+        #reminderBox h3{margin:0 0 8px;color:var(--primary-dark)}
+        #reminderClose{background:var(--primary);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+        @media (max-width:600px){ .task{flex-direction:column;align-items:flex-start} .task-info{margin-right:0;width:100%} .small-form{margin-top:8px} }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h2>Welcome, {{ username | default('User') }}</h2>
+        <a class="logout" href="{{ url_for('logout') }}">Logout</a>
+    </header>
+
+    {% if reminders and reminders|length > 0 %}
+    <div id="reminderModal" role="dialog" aria-modal="true">
+        <div id="reminderBox">
+            <h3>Upcoming reminders</h3>
+            <p style="margin:6px 0 12px;color:var(--muted)">You have {{ reminders|length }} task(s) due today or soon:</p>
+            <ul style="padding-left:18px;margin:8px 0;color:#20324a;">
+                {% for r in reminders %}
+                <li style="margin:6px 0">{{ r.task }} — <strong>{{ r.deadline }}</strong>{% if r.days == 0 %} <span style="color:var(--danger)"> (today)</span>{% elif r.days == 1 %} (in 1 day){% else %} (in {{ r.days }} days){% endif %}</li>
+                {% endfor %}
+            </ul>
+            <div style="text-align:right"><button id="reminderClose">Dismiss</button></div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("reminderClose").addEventListener("click", function(){
+            document.getElementById("reminderModal").style.display = "none";
+        });
+        setTimeout(()=>{ var m=document.getElementById("reminderModal"); if(m) m.style.display="none"; }, 20000);
+    </script>
+    {% endif %}
+
+    {% if alert %}
+    <div class="card small" style="border-left:4px solid rgba(255,174,0,0.16);background:linear-gradient(90deg,#fff6e6,#ffffff)">
+        <strong style="color:#b25b00">⚠ You have tasks due today!</strong>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div>
+                <p style="margin:0;color:var(--muted)">Total Tasks: <strong>{{ total | default(0) }}</strong></p>
+                <p style="margin:6px 0 0;color:var(--muted)">Completed: <strong>{{ completed | default(0) }}</strong></p>
+            </div>
+            <div style="min-width:220px;max-width:420px">
+                <div class="progress-bar" aria-hidden="true">
+                    <div class="progress-fill" style="width: {{ (progress or 0) | int }}%;"></div>
+                </div>
+                <p style="margin:8px 0 0;color:var(--muted);font-size:13px">{{ (progress or 0) | int }}% overall progress (average)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;color:var(--primary-dark)">Add Task</h3>
+        <form class="add-form" method="POST" action="{{ url_for('add_task') }}">
+            <input type="text" name="task" placeholder="Task name" required>
+            <input type="date" name="deadline" required>
+            <button class="btn btn-primary" type="submit">Add</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0;color:var(--primary-dark)">Your Tasks</h3>
+        {% for t in (tasks or []) %}
+        <div class="task">
+            <div class="task-info">
+                <div class="task-title {{ 'done' if t['completed']==1 else '' }}">{{ t['task'] }}</div>
+                <div class="task-meta">{{ t['deadline'] }} • <small>{{ (t['progress'] or 0) | int }}% complete</small></div>
+                <div style="margin-top:8px" class="progress-bar">
+                    <div class="progress-fill" style="width: {{ (t['progress'] or 0) | int }}%;"></div>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+                {% if t['completed']==0 %}
+                <a href="{{ url_for('done_task', id=t['id']) }}"><button class="btn btn-primary">Done</button></a>
+                {% endif %}
+                <a href="{{ url_for('delete_task', id=t['id']) }}"><button class="btn btn-danger">Delete</button></a>
+
+                <form class="small-form" method="POST" action="{{ url_for('update_progress') }}">
+                    <input type="hidden" name="id" value="{{ t['id'] }}">
+                    <input type="number" name="progress" min="0" max="100" value="{{ (t['progress'] or 0) | int }}" style="width:74px">
+                    <button class="btn btn-primary" type="submit">Set</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>

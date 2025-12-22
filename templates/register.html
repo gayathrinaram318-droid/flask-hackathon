@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Create account</title>
+    <style>
+        :root{
+            --bg:#f3f7fb;
+            --card:#ffffff;
+            --primary:#1E6FB7;
+            --primary-dark:#15598f;
+            --muted:#6b7280;
+            --radius:12px;
+            --shadow:0 8px 24px rgba(23,43,77,0.08);
+        }
+        html,body{height:100%;margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#eef6fb);color:#122340;}
+        .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+        .card{width:100%;max-width:420px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px}
+        h1{margin:0 0 10px;font-size:22px;color:var(--primary-dark)}
+        p.lead{margin:0 0 16px;color:var(--muted);font-size:14px}
+        .field{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+        input[type="text"],input[type="password"]{padding:10px 12px;border-radius:10px;border:1px solid rgba(18,35,64,0.08);font-size:14px;outline:none}
+        input:focus{box-shadow:0 4px 12px rgba(30,111,183,0.08);border-color:var(--primary)}
+        .btn{display:inline-block;width:100%;padding:10px 12px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-weight:600;cursor:pointer}
+        .btn:hover{background:var(--primary-dark)}
+        .row{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+        .link{color:var(--primary);text-decoration:none;font-weight:600;font-size:13px}
+        .alt{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
+        .alert{background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px}
+        .error{background:#ffeef0;border:1px solid #f5c6cb;color:#7a1f2d;padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px}
+        .show-pass{font-size:13px;color:var(--muted);cursor:pointer;border:none;background:none}
+        @media(max-width:480px){ .card{padding:20px} }
+    </style>
+</head>
+<body>
+<div class="center">
+    <div class="card" role="main" aria-labelledby="register-title">
+        <h1 id="register-title">Create an account</h1>
+        <p class="lead">Quickly create an account to track tasks and progress.</p>
+
+        {% if error %}
+        <div class="error" role="alert">{{ error }}</div>
+        {% endif %}
+
+        <form id="registerForm" method="POST" action="{{ url_for('register') }}">
+            <div class="field">
+                <label for="username" style="font-size:13px;color:var(--muted)">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username" required>
+            </div>
+
+            <div class="field">
+                <label for="password" style="font-size:13px;color:var(--muted)">Password</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input id="password" name="password" type="password" autocomplete="new-password" required style="flex:1">
+                    <button type="button" class="show-pass" id="togglePass" aria-label="Show password">Show</button>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="confirm" style="font-size:13px;color:var(--muted)">Confirm password</label>
+                <input id="confirm" name="confirm" type="password" autocomplete="new-password" required>
+            </div>
+
+            <div style="margin-top:14px">
+                <button class="btn" type="submit">Create account</button>
+            </div>
+
+            <div class="alt">Already have an account? <a class="link" href="{{ url_for('login') }}">Sign in</a></div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function(){
+    const pw = document.getElementById('password');
+    const confirm = document.getElementById('confirm');
+    const btn = document.getElementById('togglePass');
+    const form = document.getElementById('registerForm');
+
+    btn.addEventListener('click', function(){
+        if(pw.type === 'password'){ pw.type = 'text'; confirm.type = 'text'; btn.textContent = 'Hide'; }
+        else { pw.type = 'password'; confirm.type = 'password'; btn.textContent = 'Show'; }
+    });
+
+    form.addEventListener('submit', function(e){
+        if(pw.value !== confirm.value){
+            e.preventDefault();
+            // simple inline error
+            let existing = document.querySelector('.error.inline');
+            if(!existing){
+                const err = document.createElement('div');
+                err.className = 'error inline';
+                err.textContent = 'Passwords do not match.';
+                form.insertBefore(err, form.firstChild);
+            }
+        }
+    });
+})();
+</script>
+</body>
+</html>
